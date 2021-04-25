@@ -1,0 +1,29 @@
+version: '3'
+services:
+  db:
+    image: hasangnu/mariadb
+    env_file:
+      - env/mysql.env
+    volumes:
+      - ./database_volume:/var/lib/mysql
+
+  passbolt:
+    image: hasangnu/passbolt
+    tty: true
+    depends_on:
+      - db
+    env_file:
+      - env/passbolt.env
+    volumes:
+      - gpg_volume:/var/www/passbolt/config/gpg
+      - images_volume:/var/www/passbolt/webroot/img/public
+    tmpfs:
+      - /run
+    command: ["/usr/bin/wait-for.sh", "-t", "0", "db:3306", "--", "/docker-entrypoint.sh"]
+    ports:
+      - 8180:80
+      - 3443:443
+
+volumes:
+  gpg_volume:
+  images_volume:
